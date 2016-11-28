@@ -4,11 +4,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
  * 贴吧评论表情与贴图插件 原作者<a href="http://www.jzwalk.com/archives/net/smilies-for-typecho">羽中</a>
  * 
- * @package TiebaSmilie_Typecho
+ * @package TiebaSmilies_Typecho
  * @author simonsmh
  * @version 1.0.0
  * @dependence 13.12.12-*
- * @link https://github.com/simonsmh/TiebaSmilie_Typecho/
+ * @link https://github.com/simonsmh/TiebaSmilies_Typecho/
  */
 class Smilies_Plugin implements Typecho_Plugin_Interface
 {
@@ -45,47 +45,17 @@ class Smilies_Plugin implements Typecho_Plugin_Interface
 	public static function config(Typecho_Widget_Helper_Form $form)
 	{
 ?>
-	<div style="color:#999;font-size:0.92857em;font-weight:bold;"><p><?php _e('在comments.php适当位置插入代码%s即可. ','<span style="color:#467B96;">&lt;?php Smilies_Plugin::output(); ?&gt;</span>'); ?><br/>
+	<div><p><?php _e('在comments.php适当位置插入代码%s即可. ','<span style="color:#467B96;">&lt;?php Smilies_Plugin::output(); ?&gt;</span>'); ?><br/>
 	<?php _e('注意评论框id须为"textarea", 例: %s','&lt;textarea name="text" id="<span style="color:#E47E00;">textarea</span>"...'); ?></p></div>
 	<script type="text/javascript" src="<?php Helper::options()->adminUrl('js/jquery.js'); ?>"></script>
-	<script type="text/javascript">
-	$(function(){
-		var jqmode1 = $("#jqmode-1"),
-			jqmode0 = $("#jqmode-0");
-		if(jqmode1.is(":checked")){
-			return false;
-		}
-		else{
-			var jqhost = $("#typecho-option-item-jqhost-3");
-			jqhost.attr("style","color:#999")
-			.find("input").attr("disabled","disabled");
-			jqmode1.click(function(){
-				jqhost.removeAttr("style")
-				.find("input").removeAttr("disabled");
-			});
-			jqmode0.click(function(){
-				jqhost.attr("style","color:#999")
-				.find("input").attr("disabled","disabled");
-			});
-		}
-	});
-	</script>
 <?php
 		$smiliesset= new Typecho_Widget_Helper_Form_Element_Select('smiliesset',
-			self::parsefolders(),'tieba-smilies',_t('表情风格'),_t('插件目录下若新增表情风格文件夹可刷新本页在下拉菜单中选择. <br/>注意图片名须参考其他文件夹保持一致, 如icon_cry.gif对应哭泣表情等'));
+			self::parsefolders(),'tieba-smilies',_t('表情风格'),_t('插件目录下若新增表情风格文件夹可刷新本页在下拉菜单中选择. <br/>注意图片名须参考其他文件夹保持一致, 如image_emoticon25.png对应滑稽表情等'));
 		$form->addInput($smiliesset);
 
-		$allowpop = new Typecho_Widget_Helper_Form_Element_Radio('allowpop',
-			array(0=>_t('关闭'),1=>_t('开启')),1,_t('弹窗效果'));
-		$form->addInput($allowpop);
-
-		$jqmode = new Typecho_Widget_Helper_Form_Element_Radio('jqmode',
-			array(0=>_t('原生js'),1=>_t('jQuery')),0,_t('代码模式'));
-		$form->addInput($jqmode);
-
-		$jqhost = new Typecho_Widget_Helper_Form_Element_Text('jqhost',
-		NULL,'http://code.jquery.com/jquery-2.2.1.min.js',_t('jQuery源'));
-		$form->addInput($jqhost);
+		$defaultpic = new Typecho_Widget_Helper_Form_Element_Text('defaultpic',
+			NULL,'image_emoticon25.png',_t('默认贴图'));
+		$form->addInput($defaultpic);
 	}
 
 	/**
@@ -186,7 +156,7 @@ class Smilies_Plugin implements Typecho_Plugin_Interface
 		$smiled = array();
 
 		foreach ($smiliestrans as $tag=>$grin) {
-			$smilies = '<img src="'.$smiliesurl.'image_emoticon25.png" alt="选择表情"/>';
+			$smilies = '<img src="'.$smiliesurl.$settings->defaultpic.'" alt="选择表情"/>';
 
 			if (!in_array($grin,$smiled)) {
 				$smiled[] = $grin;
@@ -245,16 +215,12 @@ class Smilies_Plugin implements Typecho_Plugin_Interface
 			$smilies .= $icon;
 		}
 
-		$smiliesdisplay = ($settings->allowpop)?
-			'display:none;position:absolute;z-index:99;width:240px;margin-top:-70px;padding:5px;background:#fff;border:1px solid #bbb;-moz-'.$shadow.';-webkit-'.$shadow.';-khtml-'.$shadow.';'.$shadow.';-moz-'.$border.';-webkit-'.$border.';-khtml-'.$border.';'.$border.';':
-			'display:block;';
+		$smiliesdisplay = 'display:none;position:absolute;z-index:99;width:240px;margin-top:-70px;padding:5px;background:#fff;border:1px solid #bbb;-moz-'.$shadow.';-webkit-'.$shadow.';-khtml-'.$shadow.';'.$shadow.';-moz-'.$border.';-webkit-'.$border.';-khtml-'.$border.';'.$border.';';
 
 		$output = '<div id="smiliesbox" style="'.$smiliesdisplay.'">';
 		$output .= $smilies;
 		$output .= '</div>';
-
-		if ($settings->allowpop)
-			$output .= '<span onclick="Smilies.showBox();" style="cursor:pointer;" id="smiliesbutton" title="选择表情">'.$arrays[0].'</span>';
+		$output .= '<span onclick="Smilies.showBox();" style="cursor:pointer;" id="smiliesbutton" title="选择表情">'.$arrays[0].'</span>';
 
 		echo $output;
 	}
@@ -269,85 +235,17 @@ class Smilies_Plugin implements Typecho_Plugin_Interface
 	{
 		$settings = Helper::options()->plugin('Smilies');
 
-		if ($settings->jqmode) {
-			//jquery模式
-			$js = '<script type="text/javascript" src="'. Helper::options()->plugin('TiebaSmilie_Typecho')->jqhost .'"></script>';
-			$js .= '
-<script type="text/javascript">
-$(function() {
-	var box = $("#smiliesbox"),
-		button = $("#smiliesbutton"),
-		a = null;
-	box.mouseover(function(){
-		clearTimeout(a);
-		a = null;
-	});';
-			if ($settings->allowpop)
-			$js .= '
-	box.mouseleave(function(){
-		button.mouseout();
-	});';
-			$js .= '
-	box.find("span").click(function() {
-		var b = $(this).attr("data-tag");
-		$("#textarea").insert(b);
-		box.fadeOut("fast");
-	});
-	button.on({
-		click:function(){
-			box.fadeIn();
-		},
-		mouseover:function(){
-			box.fadeIn();
-		},
-		mouseout:function(){
-			a = setTimeout(function(){
-				box.fadeOut();
-				clearTimeout(a);
-				a = null
-			},200);
-		}
-	});
-$.fn.extend({
-	"insert": function(myValue) {
-		var $t = $(this)[0];
-		if (document.selection) {
-			this.focus();
-			sel = document.selection.createRange();
-			sel.text = myValue;
-			this.focus()
-		} else if ($t.selectionStart || $t.selectionStart == "0") {
-			var startPos = $t.selectionStart;
-			var endPos = $t.selectionEnd;
-			var scrollTop = $t.scrollTop;
-			$t.value = $t.value.substring(0, startPos) + myValue + $t.value.substring(endPos, $t.value.length);
-			this.focus();
-			$t.selectionStart = startPos + myValue.length;
-			$t.selectionEnd = startPos + myValue.length;
-			$t.scrollTop = scrollTop
-		} else {
-			this.value += myValue;
-			this.focus()
-		}
-	}
-}) 
-});
-</script>
-		';
-		//原生js模式
-		} else {
-		$js = "
+$js = "
 <script type=\"text/javascript\">
-//<![CDATA[
 Smilies = {
 	dom : function(id) {
 		return document.getElementById(id);
 	},
 	showBox : function () {
 		this.dom('smiliesbox').style.display = 'block';
-		document.onclick = function() {
-			this.closeBox();
-		}
+//		document.onclick = function() {
+//			this.closeBox();
+//		}
 	},
 	closeBox : function () {
 		this.dom('smiliesbox').style.display = 'none';
@@ -372,16 +270,11 @@ Smilies = {
 		) : (
 			myField.value += tag,
 			myField.focus()
-		);";
-		if ($settings->allowpop)
-		$js .= "
-		this.closeBox();";
-		$js .= "
-	}
+		);
+		this.closeBox();	}
 }
-//]]>
 </script>";
-		}
+
 
 		if ($widget->is('single')) {
 			echo $js;
