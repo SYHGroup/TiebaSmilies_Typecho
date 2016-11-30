@@ -215,7 +215,7 @@ class Smilies_Plugin implements Typecho_Plugin_Interface
 			$smilies .= $icon;
 		}
 
-		$smiliesdisplay = 'display:none;position:absolute;z-index:99;width:240px;margin-top:-70px;padding:5px;background:#fff;border:1px solid #bbb;-moz-'.$shadow.';-webkit-'.$shadow.';-khtml-'.$shadow.';'.$shadow.';-moz-'.$border.';-webkit-'.$border.';-khtml-'.$border.';'.$border.';';
+		$smiliesdisplay = 'display:none;position:absolute;z-index:99;width:490px;margin-top:-70px;padding:5px;background:#fff;border:1px solid #bbb;-moz-'.$shadow.';-webkit-'.$shadow.';-khtml-'.$shadow.';'.$shadow.';-moz-'.$border.';-webkit-'.$border.';-khtml-'.$border.';'.$border.';';
 
 		$output = '<div id="smiliesbox" style="'.$smiliesdisplay.'">';
 		$output .= $smilies;
