@@ -204,20 +204,14 @@ class Smilies_Plugin implements Typecho_Plugin_Interface
 	{
 		$options = Helper::options();
 		$settings = $options->plugin('Smilies');
-
 		$smilies = '';
-		$shadow = 'box-shadow: rgba(190,190,190,1) 1px 3px 15px';
-		$border = 'border-radius: 11px';
 		$arrays = self::parsesmilies();
-
 		$icons = array_unique($arrays[1]);
 		foreach ($icons as $icon) {
 			$smilies .= $icon;
 		}
 
-		$smiliesdisplay = 'display:none;position:absolute;z-index:99;width:490px;margin-top:-70px;padding:5px;background:#fff;border:1px solid #bbb;-moz-'.$shadow.';-webkit-'.$shadow.';-khtml-'.$shadow.';'.$shadow.';-moz-'.$border.';-webkit-'.$border.';-khtml-'.$border.';'.$border.';';
-
-		$output = '<div id="smiliesbox" style="'.$smiliesdisplay.'">';
+		$output = '<div id="smiliesbox" style="display:none;position:absolute;z-index:99;width:310px;top:-80px;background-color:rgba(255,255,255,.92);border-radius: 4px;box-shadow:0 0 10px #202020">';
 		$output .= $smilies;
 		$output .= '</div>';
 		$output .= '<span onclick="Smilies.showBox();" style="cursor:pointer;" id="smiliesbutton" title="选择表情">'.$arrays[0].'</span>';
